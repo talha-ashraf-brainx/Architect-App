@@ -2,6 +2,7 @@ import { SidebarNewProject } from './SidebarNewProject'
 import { ProjectCard } from './ProjectCard'
 import { NewDraftCard } from './NewDraftCard'
 import './ProjectsSection.css'
+import { useState } from 'react'
 
 const PROJECTS = [
   {
@@ -39,6 +40,16 @@ const PROJECTS = [
 ]
 
 export function ProjectsSection() {
+  const [projects, setProjects] = useState(PROJECTS)
+
+  function displayProjects(title: string) {
+
+    return setProjects((prevProjects) => prevProjects.filter((project) => project.title !== title))
+
+  }
+
+
+
   return (
     <section className="projects-section" aria-labelledby="projects-section-title">
       <div className="projects-section__header">
@@ -55,7 +66,7 @@ export function ProjectsSection() {
       </div>
 
       <div className="projects-section__grid">
-        {PROJECTS.map((p) => (
+        {projects.map((p) => (
           <ProjectCard
             key={p.title}
             title={p.title}
@@ -63,6 +74,7 @@ export function ProjectsSection() {
             taskCount={p.taskCount}
             icon={p.icon}
             footerMeta={p.footerMeta}
+            onDelete={() => displayProjects(p.title)}
           />
         ))}
         <NewDraftCard />
