@@ -1,0 +1,27 @@
+.sidebar-new-project {
+  align-self: stretch;
+  margin: 0 16px 16px;
+  margin-top: auto;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-family: var(--font-body);
+  font-size: 16;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
+}
+
+.sidebar-new-project:hover {
+  background: color-mix(in srgb, var(--primary) 92%, var(--on-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar-new-project:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--outline-variant) 20%, transparent);
+  outline-offset: 2px;
+}

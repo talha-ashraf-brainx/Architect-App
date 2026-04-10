@@ -1,0 +1,44 @@
+.sidebar-new-project {
+  align-self: stretch;
+  margin: 0 16px 16px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
+}
+
+.sidebar-new-project__plus {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--surface-container-lowest);
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sidebar-new-project:hover {
+  background: color-mix(in srgb, var(--primary) 92%, var(--on-surface));
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar-new-project:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--outline-variant) 20%, transparent);
+  outline-offset: 2px;
+}

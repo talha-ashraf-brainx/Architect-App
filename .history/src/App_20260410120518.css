@@ -1,0 +1,10 @@
+.app {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+aside {
+  width: 256px;
+  background:#F9FAFC;
+}
