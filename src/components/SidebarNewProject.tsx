@@ -1,8 +1,20 @@
 import './SidebarNewProject.css'
 
-export function SidebarNewProject() {
+type SidebarNewProjectProps = {
+  widthPx?: number
+}
+
+export function SidebarNewProject({ widthPx }: SidebarNewProjectProps) {
   return (
-    <button type="button" className="sidebar-new-project">
+    <button
+      type="button"
+      className="sidebar-new-project"
+      style={
+        widthPx !== undefined
+          ? { width: `${widthPx}px`, boxSizing: 'border-box' }
+          : undefined
+      }
+    >
       <span className="sidebar-new-project__plus" aria-hidden>
         +
       </span>

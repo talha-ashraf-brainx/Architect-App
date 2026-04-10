@@ -5,6 +5,7 @@ import { SidebarNav } from './components/SidebarNav'
 import { SidebarNewProject } from './components/SidebarNewProject'
 import { SidebarLogout } from './components/SidebarLogout'
 import { AppBar } from './components/AppBar'
+import { ProjectsSection } from './components/ProjectsSection'
 
 function MenuIcon() {
   return (
@@ -138,6 +139,7 @@ function App() {
 
         <main className="app-main">
           <AppBar />
+          <ProjectsSection />
         </main>
       </div>
     </>
