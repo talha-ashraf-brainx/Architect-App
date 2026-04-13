@@ -37,10 +37,29 @@ const PROJECTS = [
     icon: 'compass' as const,
     footerMeta: { type: 'drafting' as const },
   },
-
+  {
+    title: 'Coastal Retreat',
+    description:
+      'Developing passive cooling strategies and cross-ventilation paths for the ocean-facing pavilion.',
+    taskCount: 15,
+    icon: 'building' as const,
+    footerMeta: { type: 'overdue' as const },
+  },
+  {
+    title: 'Gallery Extension',
+    description:
+      'Exploring natural light diffusion for the new exhibition wing without compromising UV protection.',
+    taskCount: 5,
+    icon: 'compass' as const,
+    footerMeta: { type: 'drafting' as const },
+  },
 ]
 
-export function ProjectsSection() {
+type ProjectsSectionProps = {
+  setShowModal: (show: boolean) => void
+}
+
+export function ProjectsSection({ setShowModal }: ProjectsSectionProps) {
   const [projects, setProjects] = useState(PROJECTS)
 
   function displayProjects(title: string) {
@@ -61,7 +80,7 @@ export function ProjectsSection() {
             single precision-tuned interface.
           </p>
         </div>
-        <SidebarNewProject widthPx={224} />
+        <SidebarNewProject widthPx={224} setShowModal={setShowModal} />
       </div>
 
       <div className="projects-section__grid">
@@ -78,6 +97,7 @@ export function ProjectsSection() {
         ))}
         <NewDraftCard />
       </div>
+
     </section>
   )
 }

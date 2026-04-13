@@ -7,6 +7,7 @@ import { SidebarLogout } from './components/SidebarLogout'
 import { AppBar } from './components/AppBar'
 import { ProjectsSection } from './components/ProjectsSection'
 import { AppFooter } from './components/AppFooter'
+import { NewProjectModal } from './components/NewProjectModal'
 
 function MenuIcon() {
   return (
@@ -51,6 +52,7 @@ function CloseIcon() {
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     const closeIfDesktop = () => {
@@ -86,6 +88,15 @@ function App() {
       document.body.style.overflow = ''
     }
   }, [sidebarOpen])
+
+  useEffect(() => {
+    if (!showModal) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [showModal])
 
   return (
     <>
@@ -133,16 +144,20 @@ function App() {
           </div>
           <SidebarNav onNavigate={() => setSidebarOpen(false)} />
           <div className="app-sidebar__footer">
-            <SidebarNewProject />
+            <SidebarNewProject setShowModal={setShowModal} />
             <SidebarLogout />
           </div>
         </aside>
 
         <main className="app-main">
           <AppBar />
-          <ProjectsSection />
+          <ProjectsSection setShowModal={setShowModal} />
           <AppFooter />
         </main>
+
+        {showModal && (
+          <NewProjectModal onClose={() => setShowModal(false)} />
+        )}
       </div>
     </>
   )

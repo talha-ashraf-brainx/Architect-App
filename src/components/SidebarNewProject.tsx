@@ -2,9 +2,10 @@ import './SidebarNewProject.css'
 
 type SidebarNewProjectProps = {
   widthPx?: number
+  setShowModal: (show: boolean) => void
 }
 
-export function SidebarNewProject({ widthPx }: SidebarNewProjectProps) {
+export function SidebarNewProject({ widthPx, setShowModal }: SidebarNewProjectProps) {
   return (
     <button
       type="button"
@@ -14,6 +15,7 @@ export function SidebarNewProject({ widthPx }: SidebarNewProjectProps) {
           ? { width: `${widthPx}px`, boxSizing: 'border-box' }
           : undefined
       }
+      onClick={() => setShowModal(true)}
     >
       <span className="sidebar-new-project__plus" aria-hidden>
         +

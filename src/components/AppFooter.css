@@ -1,5 +1,6 @@
 .app-footer {
   flex-shrink: 0;
+  margin-top: auto;
   padding: 16px 24px 24px;
   border-top: 1px solid color-mix(in srgb, var(--on-primary) 18%, transparent);
   background: var(--primary);
