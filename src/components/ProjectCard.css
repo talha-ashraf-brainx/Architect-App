@@ -9,6 +9,12 @@
   background: var(--surface-container-lowest);
   box-shadow: var(--shadow-sm);
   text-align: start;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.project-card:hover {
+  box-shadow: var(--shadow-ambient);
+  transform: translateY(-1px);
 }
 
 .project-card__header {

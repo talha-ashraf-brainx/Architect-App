@@ -15,6 +15,7 @@ type ProjectCardProps = {
   icon: IconId
   footerMeta: ProjectCardFooterMeta
   onDelete?: () => void
+  onClick?: () => void
 }
 
 function CardIcon({ id }: { id: IconId }) {
@@ -148,6 +149,7 @@ function FooterRight({ meta }: { meta: ProjectCardFooterMeta }) {
 }
 
 export function ProjectCard({
+  onClick,
   title,
   description,
   taskCount,
@@ -156,7 +158,7 @@ export function ProjectCard({
   onDelete,
 }: ProjectCardProps) {
   return (
-    <article className="project-card">
+    <article className="project-card" onClick={onClick}>
       <div className="project-card__header">
         <div className="project-card__icon-wrap">
           <CardIcon id={icon} />

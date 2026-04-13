@@ -1,9 +1,11 @@
 import type { Dispatch } from 'react'
+import { useState } from 'react'
 import { SidebarNewProject } from './SidebarNewProject'
 import { ProjectCard } from './ProjectCard'
 import { NewDraftCard } from './NewDraftCard'
 import './ProjectsSection.css'
 import type { Project, ProjectsCommand } from '../App'
+import { ProjectDetailsPanel } from './ProjectDetailsPanel'
 
 type ProjectsSectionProps = {
   setShowModal: (show: boolean) => void
@@ -16,12 +18,26 @@ export function ProjectsSection({
   projects,
   projectsDispatch,
 }: ProjectsSectionProps) {
+
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+
+
+
   function deleteProject(title: string) {
     projectsDispatch({ type: 'DELETE', title })
   }
 
+  if (selectedProject) {
+    return (
+      <ProjectDetailsPanel
+        project={selectedProject}
+        onBack={() => setSelectedProject(null)}
+      />
+    )
+  }
+
   return (
-    <section className="projects-section" aria-labelledby="projects-section-title">
+    <section className="projects-section" aria-labelledby="projects-section-title" >
       <div className="projects-section__header">
         <div className="projects-section__intro">
           <h2 id="projects-section-title" className="projects-section__title">
@@ -39,6 +55,7 @@ export function ProjectsSection({
         {projects.map((p) => (
           <ProjectCard
             key={p.title}
+            onClick={() => setSelectedProject(p)}
             title={p.title}
             description={p.description}
             taskCount={p.taskCount}
@@ -50,6 +67,6 @@ export function ProjectsSection({
         <NewDraftCard onClick={() => setShowModal(true)} />
       </div>
 
-    </section>
+    </section >
   )
 }
