@@ -37,15 +37,14 @@ const PROJECTS = [
     icon: 'compass' as const,
     footerMeta: { type: 'drafting' as const },
   },
+
 ]
 
 export function ProjectsSection() {
   const [projects, setProjects] = useState(PROJECTS)
 
   function displayProjects(title: string) {
-
     return setProjects((prevProjects) => prevProjects.filter((project) => project.title !== title))
-
   }
 
 
