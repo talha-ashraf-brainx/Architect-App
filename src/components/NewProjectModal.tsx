@@ -1,8 +1,11 @@
-import { useEffect, useId } from 'react'
+import { useEffect, useId, useState } from 'react'
 import './NewProjectModal.css'
+import type { Dispatch } from 'react'
+import type { ProjectsCommand } from '../App'
 
 type NewProjectModalProps = {
   onClose: () => void
+  projectsDispatch: Dispatch<ProjectsCommand>
 }
 
 function FolderPlusIcon() {
@@ -50,10 +53,12 @@ function LockIcon() {
   )
 }
 
-export function NewProjectModal({ onClose }: NewProjectModalProps) {
+export function NewProjectModal({ onClose, projectsDispatch }: NewProjectModalProps) {
   const titleId = useId()
   const nameId = useId()
   const descId = useId()
+
+  const [newProject, setNewProject] = useState({ title: '', description: '' })
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -98,6 +103,8 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
             type="text"
             placeholder="e.g., Skyline Residential"
             autoComplete="off"
+            value={newProject.title}
+            onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
           />
 
           <label className="new-project-modal__label" htmlFor={descId}>
@@ -108,6 +115,8 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
             className="new-project-modal__textarea"
             rows={4}
             placeholder="Define the vision for this project..."
+            value={newProject.description}
+            onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
           />
         </div>
 
@@ -119,7 +128,18 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
           >
             Cancel
           </button>
-          <button type="button" className="new-project-modal__create">
+          <button
+            type="button"
+            className="new-project-modal__create"
+            onClick={() => {
+              projectsDispatch({
+                type: 'ADD',
+                title: newProject.title,
+                description: newProject.description,
+              })
+              onClose()
+            }}
+          >
             Create
           </button>
         </div>

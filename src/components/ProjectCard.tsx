@@ -1,6 +1,6 @@
 import './ProjectCard.css'
 
-type IconId = 'layers' | 'pencil' | 'building' | 'compass'
+export type IconId = 'layers' | 'pencil' | 'building' | 'compass'
 
 export type ProjectCardFooterMeta =
   | { type: 'avatars'; extraCount: number }

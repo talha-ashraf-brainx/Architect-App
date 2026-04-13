@@ -1,72 +1,24 @@
+import type { Dispatch } from 'react'
 import { SidebarNewProject } from './SidebarNewProject'
 import { ProjectCard } from './ProjectCard'
 import { NewDraftCard } from './NewDraftCard'
 import './ProjectsSection.css'
-import { useState } from 'react'
-
-const PROJECTS = [
-  {
-    title: 'Modernist Villa 24',
-    description:
-      'Visualizing the structural integration of the main atrium with the surrounding glass curtain wall system.',
-    taskCount: 12,
-    icon: 'layers' as const,
-    footerMeta: { type: 'avatars' as const, extraCount: 3 },
-  },
-  {
-    title: 'Urban Loft Renovation',
-    description:
-      'Reconfiguring the open-plan living space while preserving the original industrial steel beam aesthetic.',
-    taskCount: 8,
-    icon: 'pencil' as const,
-    footerMeta: { type: 'time' as const, label: 'Update 2h ago' },
-  },
-  {
-    title: 'Coastal Retreat',
-    description:
-      'Developing passive cooling strategies and cross-ventilation paths for the ocean-facing pavilion.',
-    taskCount: 15,
-    icon: 'building' as const,
-    footerMeta: { type: 'overdue' as const },
-  },
-  {
-    title: 'Gallery Extension',
-    description:
-      'Exploring natural light diffusion for the new exhibition wing without compromising UV protection.',
-    taskCount: 5,
-    icon: 'compass' as const,
-    footerMeta: { type: 'drafting' as const },
-  },
-  {
-    title: 'Coastal Retreat',
-    description:
-      'Developing passive cooling strategies and cross-ventilation paths for the ocean-facing pavilion.',
-    taskCount: 15,
-    icon: 'building' as const,
-    footerMeta: { type: 'overdue' as const },
-  },
-  {
-    title: 'Gallery Extension',
-    description:
-      'Exploring natural light diffusion for the new exhibition wing without compromising UV protection.',
-    taskCount: 5,
-    icon: 'compass' as const,
-    footerMeta: { type: 'drafting' as const },
-  },
-]
+import type { Project, ProjectsCommand } from '../App'
 
 type ProjectsSectionProps = {
   setShowModal: (show: boolean) => void
+  projects: Project[]
+  projectsDispatch: Dispatch<ProjectsCommand>
 }
 
-export function ProjectsSection({ setShowModal }: ProjectsSectionProps) {
-  const [projects, setProjects] = useState(PROJECTS)
-
-  function displayProjects(title: string) {
-    return setProjects((prevProjects) => prevProjects.filter((project) => project.title !== title))
+export function ProjectsSection({
+  setShowModal,
+  projects,
+  projectsDispatch,
+}: ProjectsSectionProps) {
+  function deleteProject(title: string) {
+    projectsDispatch({ type: 'DELETE', title })
   }
-
-
 
   return (
     <section className="projects-section" aria-labelledby="projects-section-title">
@@ -92,10 +44,10 @@ export function ProjectsSection({ setShowModal }: ProjectsSectionProps) {
             taskCount={p.taskCount}
             icon={p.icon}
             footerMeta={p.footerMeta}
-            onDelete={() => displayProjects(p.title)}
+            onDelete={() => deleteProject(p.title)}
           />
         ))}
-        <NewDraftCard />
+        <NewDraftCard onClick={() => setShowModal(true)} />
       </div>
 
     </section>

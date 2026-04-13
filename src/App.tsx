@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import './App.css'
 import { SidebarBrand } from './components/SidebarBrand'
 import { SidebarNav } from './components/SidebarNav'
@@ -8,6 +8,76 @@ import { AppBar } from './components/AppBar'
 import { ProjectsSection } from './components/ProjectsSection'
 import { AppFooter } from './components/AppFooter'
 import { NewProjectModal } from './components/NewProjectModal'
+import type { IconId, ProjectCardFooterMeta } from './components/ProjectCard'
+
+export type Project = {
+  title: string
+  description: string
+  taskCount: number
+  icon: IconId
+  footerMeta: ProjectCardFooterMeta
+}
+
+export type ProjectsCommand =
+  | { type: 'ADD'; title: string; description: string }
+  | { type: 'DELETE'; title: string }
+
+const PROJECT_CARD_ATTRIBUTE_SAMPLES: Array<
+  Pick<Project, 'taskCount' | 'icon' | 'footerMeta'>
+> = [
+    {
+      taskCount: 12,
+      icon: 'layers',
+      footerMeta: { type: 'avatars', extraCount: 3 },
+    },
+    {
+      taskCount: 8,
+      icon: 'pencil',
+      footerMeta: { type: 'time', label: 'Update 2h ago' },
+    },
+    {
+      taskCount: 15,
+      icon: 'building',
+      footerMeta: { type: 'overdue' },
+    },
+    {
+      taskCount: 5,
+      icon: 'compass',
+      footerMeta: { type: 'drafting' },
+    },
+  ]
+
+function pick<T>(items: readonly T[]): T {
+  return items[Math.floor(Math.random() * items.length)]!
+}
+
+function randomProjectCardAttributes(): Pick<
+  Project,
+  'taskCount' | 'icon' | 'footerMeta'
+> {
+  const s = PROJECT_CARD_ATTRIBUTE_SAMPLES
+  return {
+    taskCount: pick(s.map((row) => row.taskCount)),
+    icon: pick(s.map((row) => row.icon)),
+    footerMeta: pick(s.map((row) => row.footerMeta)) as ProjectCardFooterMeta,
+  }
+}
+
+function projectsReducer(state: Project[], action: ProjectsCommand): Project[] {
+  switch (action.type) {
+    case 'ADD': {
+      const attrs = randomProjectCardAttributes()
+      const project: Project = {
+        title: action.title,
+        description: action.description,
+        ...attrs,
+      }
+      return [...state, project]
+    }
+    case 'DELETE':
+      return state.filter((p) => p.title !== action.title)
+  }
+}
 
 function MenuIcon() {
   return (
@@ -53,6 +123,7 @@ function CloseIcon() {
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [projects, projectsDispatch] = useReducer(projectsReducer, [])
 
   useEffect(() => {
     const closeIfDesktop = () => {
@@ -151,12 +222,16 @@ function App() {
 
         <main className="app-main">
           <AppBar />
-          <ProjectsSection setShowModal={setShowModal} />
+          <ProjectsSection
+            setShowModal={setShowModal}
+            projects={projects}
+            projectsDispatch={projectsDispatch}
+          />
           <AppFooter />
         </main>
 
         {showModal && (
-          <NewProjectModal onClose={() => setShowModal(false)} />
+          <NewProjectModal onClose={() => setShowModal(false)} projectsDispatch={projectsDispatch} />
         )}
       </div>
     </>
