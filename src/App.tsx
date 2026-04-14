@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useState } from 'react'
 import './App.css'
 import { SidebarBrand } from './components/SidebarBrand'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { SidebarNav } from './components/SidebarNav'
 import { SidebarNewProject } from './components/SidebarNewProject'
 import { SidebarLogout } from './components/SidebarLogout'
@@ -9,6 +10,7 @@ import { ProjectsSection } from './components/ProjectsSection'
 import { AppFooter } from './components/AppFooter'
 import { NewProjectModal } from './components/NewProjectModal'
 import type { IconId, ProjectCardFooterMeta } from './components/ProjectCard'
+import SettingsPage from './components/SettingsPage'
 
 export type ProjectTaskStatus = 'in-progress' | 'done'
 
@@ -90,20 +92,20 @@ function projectsReducer(state: Project[], action: ProjectsCommand): Project[] {
       return state.map((p) =>
         p.title === action.projectTitle
           ? {
-              ...p,
-              tasks: p.tasks.filter((_, i) => i !== action.taskIndex),
-            }
+            ...p,
+            tasks: p.tasks.filter((_, i) => i !== action.taskIndex),
+          }
           : p,
       )
     case 'MARK_TASK_DONE':
       return state.map((p) =>
         p.title === action.projectTitle
           ? {
-              ...p,
-              tasks: p.tasks.map((t, i) =>
-                i === action.taskIndex ? { ...t, status: 'done' as const } : t,
-              ),
-            }
+            ...p,
+            tasks: p.tasks.map((t, i) =>
+              i === action.taskIndex ? { ...t, status: 'done' as const } : t,
+            ),
+          }
           : p,
       )
   }
@@ -252,11 +254,20 @@ function App() {
 
         <main className="app-main">
           <AppBar />
-          <ProjectsSection
-            setShowModal={setShowModal}
-            projects={projects}
-            projectsDispatch={projectsDispatch}
-          />
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <ProjectsSection
+                  setShowModal={setShowModal}
+                  projects={projects}
+                  projectsDispatch={projectsDispatch}
+                />
+              }
+            />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
           <AppFooter />
         </main>
 

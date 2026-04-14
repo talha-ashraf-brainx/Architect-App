@@ -1,12 +1,10 @@
-import { useState } from 'react'
+import { NavLink } from 'react-router-dom'
 import './SidebarNav.css'
 
-type NavId = 'projects' | 'settings'
-
-const items: { id: NavId; label: string }[] = [
-  { id: 'projects', label: 'Projects' },
-  { id: 'settings', label: 'Settings' },
-]
+const items = [
+  { id: 'projects', label: 'Projects', to: '/' },
+  { id: 'settings', label: 'Settings', to: '/settings' },
+] as const
 
 function ProjectsIcon() {
   return (
@@ -60,28 +58,23 @@ type SidebarNavProps = {
 }
 
 export function SidebarNav({ onNavigate }: SidebarNavProps) {
-  const [active, setActive] = useState<NavId>('projects')
-
   return (
     <nav className="sidebar-nav" aria-label="Application">
       <ul className="sidebar-nav__list">
-        {items.map(({ id, label }) => (
+        {items.map(({ id, label, to }) => (
           <li key={id}>
-            <button
-              type="button"
-              className={
+            <NavLink
+              to={to}
+              end={to === '/'}
+              onClick={() => onNavigate?.()}
+              className={({ isActive }) =>
                 'sidebar-nav__item' +
-                (active === id ? ' sidebar-nav__item--selected' : '')
+                (isActive ? ' sidebar-nav__item--selected' : '')
               }
-              onClick={() => {
-                setActive(id)
-                onNavigate?.()
-              }}
-              aria-current={active === id ? 'page' : undefined}
             >
               {id === 'projects' ? <ProjectsIcon /> : <SettingsIcon />}
               <span className="sidebar-nav__label">{label}</span>
-            </button>
+            </NavLink>
           </li>
         ))}
       </ul>
