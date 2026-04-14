@@ -1,59 +1,15 @@
 import { useEffect, useId, useState } from 'react'
 import './NewProjectModal.css'
-import type { Dispatch } from 'react'
-import type { ProjectsCommand } from '../App'
+import { useAppDispatch } from '../redux/hooks'
+import { addProject } from '../redux/projectsSlice'
+import { FolderPlusIcon, LockIcon } from './icons'
 
 type NewProjectModalProps = {
   onClose: () => void
-  projectsDispatch: Dispatch<ProjectsCommand>
 }
 
-function FolderPlusIcon() {
-  return (
-    <svg
-      className="new-project-modal__hero-icon-svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M3 8.25A2.25 2.25 0 015.25 6h4.03a2.25 2.25 0 011.59.66l.97.97h5.91A2.25 2.25 0 0120 9.88V17.25A2.25 2.25 0 0117.75 19.5H5.25A2.25 2.25 0 013 17.25V8.25z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 10.5v6M9 13.5h6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function LockIcon() {
-  return (
-    <svg
-      className="new-project-modal__lock-svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M7 11V8a5 5 0 0110 0v3M6 11h12a1 1 0 011 1v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7a1 1 0 011-1z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-export function NewProjectModal({ onClose, projectsDispatch }: NewProjectModalProps) {
+export function NewProjectModal({ onClose }: NewProjectModalProps) {
+  const dispatch = useAppDispatch()
   const titleId = useId()
   const nameId = useId()
   const descId = useId()
@@ -132,11 +88,12 @@ export function NewProjectModal({ onClose, projectsDispatch }: NewProjectModalPr
             type="button"
             className="new-project-modal__create"
             onClick={() => {
-              projectsDispatch({
-                type: 'ADD',
-                title: newProject.title,
-                description: newProject.description,
-              })
+              dispatch(
+                addProject({
+                  title: newProject.title,
+                  description: newProject.description,
+                }),
+              )
               onClose()
             }}
           >

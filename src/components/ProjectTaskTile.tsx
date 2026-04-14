@@ -1,33 +1,16 @@
 import './ProjectTaskTile.css'
 import type { ProjectTaskStatus } from '../App'
+import { useAppDispatch } from '../redux/hooks'
+import { deleteTask, markTaskDone } from '../redux/projectsSlice'
+import { TrashIcon } from './icons'
 
 export type ProjectTaskTileProps = {
   title: string
   status: ProjectTaskStatus
   dueLabel?: string
   caption?: string
-  onMarkDone?: () => void
-  onDelete?: () => void
-}
-
-function TrashIcon() {
-  return (
-    <svg
-      className="project-task-tile__trash-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+  projectTitle: string
+  taskIndex: number
 }
 
 const STATUS_LABEL: Record<ProjectTaskStatus, string> = {
@@ -40,9 +23,10 @@ export function ProjectTaskTile({
   status,
   dueLabel,
   caption,
-  onMarkDone,
-  onDelete,
+  projectTitle,
+  taskIndex,
 }: ProjectTaskTileProps) {
+  const dispatch = useAppDispatch()
   const isDone = status === 'done'
 
   return (
@@ -65,31 +49,33 @@ export function ProjectTaskTile({
           ) : null}
         </div>
         <div className="project-task-tile__actions">
-          {status === 'in-progress' && onMarkDone ? (
+          {status === 'in-progress' ? (
             <button
               type="button"
               className="project-task-tile__mark-done"
               onClick={(e) => {
                 e.stopPropagation()
-                onMarkDone()
+                dispatch(
+                  markTaskDone({ projectTitle, taskIndex }),
+                )
               }}
             >
               Mark done
             </button>
           ) : null}
-          {onDelete ? (
-            <button
-              type="button"
-              className="project-task-tile__delete"
-              aria-label={'Delete task ' + title}
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete()
-              }}
-            >
-              <TrashIcon />
-            </button>
-          ) : null}
+          <button
+            type="button"
+            className="project-task-tile__delete"
+            aria-label={'Delete task ' + title}
+            onClick={(e) => {
+              e.stopPropagation()
+              dispatch(
+                deleteTask({ projectTitle, taskIndex }),
+              )
+            }}
+          >
+            <TrashIcon className="project-task-tile__trash-icon" />
+          </button>
         </div>
       </div>
       <h3 className="project-task-tile__title">{title}</h3>

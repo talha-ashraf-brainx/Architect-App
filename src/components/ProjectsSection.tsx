@@ -1,22 +1,19 @@
-import type { Dispatch } from 'react'
 import { useState } from 'react'
 import { SidebarNewProject } from './SidebarNewProject'
 import { ProjectCard } from './ProjectCard'
 import { NewDraftCard } from './NewDraftCard'
 import './ProjectsSection.css'
-import type { Project, ProjectsCommand } from '../App'
+import type { Project } from '../App'
 import { ProjectDetailsPanel } from './ProjectDetailsPanel'
 
 type ProjectsSectionProps = {
   setShowModal: (show: boolean) => void
   projects: Project[]
-  projectsDispatch: Dispatch<ProjectsCommand>
 }
 
 export function ProjectsSection({
   setShowModal,
   projects,
-  projectsDispatch,
 }: ProjectsSectionProps) {
 
   const [selectedTitle, setSelectedTitle] = useState<string | null>(null)
@@ -24,17 +21,11 @@ export function ProjectsSection({
     ? projects.find((p) => p.title === selectedTitle) ?? null
     : null
 
-  function deleteProject(title: string) {
-    if (selectedTitle === title) setSelectedTitle(null)
-    projectsDispatch({ type: 'DELETE', title })
-  }
-
   if (selectedProject) {
     return (
       <ProjectDetailsPanel
         project={selectedProject}
         onBack={() => setSelectedTitle(null)}
-        projectsDispatch={projectsDispatch}
       />
     )
   }
@@ -64,7 +55,6 @@ export function ProjectsSection({
             taskCount={p.tasks.length}
             icon={p.icon}
             footerMeta={p.footerMeta}
-            onDelete={() => deleteProject(p.title)}
           />
         ))}
         <NewDraftCard onClick={() => setShowModal(true)} />

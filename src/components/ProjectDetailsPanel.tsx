@@ -1,59 +1,18 @@
-import type { Dispatch } from 'react'
 import { useState } from 'react'
 import { ProjectTaskTile } from './ProjectTaskTile'
 import { AddTaskModal } from './AddTaskModal'
 import './ProjectDetailsPanel.css'
-import type { Project, ProjectsCommand } from '../App'
+import type { Project } from '../App'
+import { BackIcon, PlusIcon } from './icons'
 
 type ProjectDetailsPanelProps = {
   project: Project
   onBack: () => void
-  projectsDispatch: Dispatch<ProjectsCommand>
-}
-
-function BackIcon() {
-  return (
-    <svg
-      className="project-details__back-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M15 18l-6-6 6-6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function PlusIcon() {
-  return (
-    <svg
-      className="project-details__add-task-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
 }
 
 export function ProjectDetailsPanel({
   project,
   onBack,
-  projectsDispatch,
 }: ProjectDetailsPanelProps) {
   const [addTaskOpen, setAddTaskOpen] = useState(false)
 
@@ -109,20 +68,8 @@ export function ProjectDetailsPanel({
             title={task.title}
             status={task.status}
             caption={task.description}
-            onMarkDone={() =>
-              projectsDispatch({
-                type: 'MARK_TASK_DONE',
-                projectTitle: project.title,
-                taskIndex: index,
-              })
-            }
-            onDelete={() =>
-              projectsDispatch({
-                type: 'DELETE_TASK',
-                projectTitle: project.title,
-                taskIndex: index,
-              })
-            }
+            projectTitle={project.title}
+            taskIndex={index}
           />
         ))}
       </div>
@@ -130,7 +77,6 @@ export function ProjectDetailsPanel({
       {addTaskOpen ? (
         <AddTaskModal
           onClose={() => setAddTaskOpen(false)}
-          projectsDispatch={projectsDispatch}
           projectTitle={project.title}
         />
       ) : null}

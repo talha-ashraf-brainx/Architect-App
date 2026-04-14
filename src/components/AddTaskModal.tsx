@@ -1,47 +1,21 @@
 import { useEffect, useId, useState } from 'react'
-import type { Dispatch } from 'react'
 import './NewProjectModal.css'
 import './AddTaskModal.css'
-import type { ProjectTaskStatus, ProjectsCommand } from '../App'
+import type { ProjectTaskStatus } from '../App'
+import { useAppDispatch } from '../redux/hooks'
+import { addTask } from '../redux/projectsSlice'
+import { ChecklistIcon } from './icons'
 
 type AddTaskModalProps = {
   onClose: () => void
-  projectsDispatch: Dispatch<ProjectsCommand>
   projectTitle: string
-}
-
-function ChecklistIcon() {
-  return (
-    <svg
-      className="new-project-modal__hero-icon-svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M9 11l3 3L22 4"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
 }
 
 export function AddTaskModal({
   onClose,
-  projectsDispatch,
   projectTitle,
 }: AddTaskModalProps) {
+  const dispatch = useAppDispatch()
   const headingId = useId()
   const statusLabelId = useId()
   const nameId = useId()
@@ -172,11 +146,12 @@ export function AddTaskModal({
             type="button"
             className="new-project-modal__create"
             onClick={() => {
-              projectsDispatch({
-                type: 'ADD_TASK',
-                projectTitle,
-                task: { title, description, status },
-              })
+              dispatch(
+                addTask({
+                  projectTitle,
+                  task: { title, description, status },
+                }),
+              )
               onClose()
             }}
           >

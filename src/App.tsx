@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import { SidebarBrand } from './components/SidebarBrand'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -9,8 +9,10 @@ import { AppBar } from './components/AppBar'
 import { ProjectsSection } from './components/ProjectsSection'
 import { AppFooter } from './components/AppFooter'
 import { NewProjectModal } from './components/NewProjectModal'
-import type { IconId, ProjectCardFooterMeta } from './components/ProjectCard'
 import SettingsPage from './components/SettingsPage'
+import { useAppSelector } from './redux/hooks'
+import type { IconId, ProjectCardFooterMeta } from './redux/projectsSlice'
+import { CloseIcon, MenuIcon } from './components/icons'
 
 export type ProjectTaskStatus = 'in-progress' | 'done'
 
@@ -28,134 +30,10 @@ export type Project = {
   tasks: ProjectTask[]
 }
 
-export type ProjectsCommand =
-  | { type: 'ADD'; title: string; description: string }
-  | { type: 'DELETE'; title: string }
-  | { type: 'ADD_TASK'; projectTitle: string; task: ProjectTask }
-  | { type: 'DELETE_TASK'; projectTitle: string; taskIndex: number }
-  | { type: 'MARK_TASK_DONE'; projectTitle: string; taskIndex: number }
-
-const PROJECT_CARD_ATTRIBUTE_SAMPLES: Array<
-  Pick<Project, 'icon' | 'footerMeta'>
-> = [
-    {
-      icon: 'layers',
-      footerMeta: { type: 'avatars', extraCount: 3 },
-    },
-    {
-      icon: 'pencil',
-      footerMeta: { type: 'time', label: 'Update 2h ago' },
-    },
-    {
-      icon: 'building',
-      footerMeta: { type: 'overdue' },
-    },
-    {
-      icon: 'compass',
-      footerMeta: { type: 'drafting' },
-    },
-  ]
-
-function pick<T>(items: readonly T[]): T {
-  return items[Math.floor(Math.random() * items.length)]!
-}
-
-function randomProjectCardAttributes(): Pick<Project, 'icon' | 'footerMeta'> {
-  const s = PROJECT_CARD_ATTRIBUTE_SAMPLES
-  return {
-    icon: pick(s.map((row) => row.icon)),
-    footerMeta: pick(s.map((row) => row.footerMeta)) as ProjectCardFooterMeta,
-  }
-}
-
-function projectsReducer(state: Project[], action: ProjectsCommand): Project[] {
-  switch (action.type) {
-    case 'ADD': {
-      const attrs = randomProjectCardAttributes()
-      const project: Project = {
-        title: action.title,
-        description: action.description,
-        ...attrs,
-        tasks: [],
-      }
-      return [...state, project]
-    }
-    case 'DELETE':
-      return state.filter((p) => p.title !== action.title)
-    case 'ADD_TASK':
-      return state.map((p) =>
-        p.title === action.projectTitle
-          ? { ...p, tasks: [...p.tasks, action.task] }
-          : p,
-      )
-    case 'DELETE_TASK':
-      return state.map((p) =>
-        p.title === action.projectTitle
-          ? {
-            ...p,
-            tasks: p.tasks.filter((_, i) => i !== action.taskIndex),
-          }
-          : p,
-      )
-    case 'MARK_TASK_DONE':
-      return state.map((p) =>
-        p.title === action.projectTitle
-          ? {
-            ...p,
-            tasks: p.tasks.map((t, i) =>
-              i === action.taskIndex ? { ...t, status: 'done' as const } : t,
-            ),
-          }
-          : p,
-      )
-  }
-}
-
-function MenuIcon() {
-  return (
-    <svg
-      className="app-sidebar__menu-icon"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M4 6h16M4 12h16M4 18h16"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <path
-        d="M18 6L6 18M6 6l12 12"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showModal, setShowModal] = useState(false)
-  const [projects, projectsDispatch] = useReducer(projectsReducer, [])
+  const projects = useAppSelector((s) => s.projects.projects)
 
   useEffect(() => {
     const closeIfDesktop = () => {
@@ -261,7 +139,6 @@ function App() {
                 <ProjectsSection
                   setShowModal={setShowModal}
                   projects={projects}
-                  projectsDispatch={projectsDispatch}
                 />
               }
             />
@@ -272,7 +149,7 @@ function App() {
         </main>
 
         {showModal && (
-          <NewProjectModal onClose={() => setShowModal(false)} projectsDispatch={projectsDispatch} />
+          <NewProjectModal onClose={() => setShowModal(false)} />
         )}
       </div>
     </>
