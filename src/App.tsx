@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import './App.css'
 import { SidebarBrand } from './components/SidebarBrand'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -30,10 +30,23 @@ export type Project = {
   tasks: ProjectTask[]
 }
 
+type ModalAction = { type: 'SHOW' } | { type: 'HIDE' }
+
+function modalReducer(_state: boolean, action: ModalAction): boolean {
+  switch (action.type) {
+    case 'SHOW':
+      return true
+    case 'HIDE':
+      return false
+  }
+}
+
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, modalDispatch] = useReducer(modalReducer, false)
   const projects = useAppSelector((s) => s.projects.projects)
+  const setShowModal = (show: boolean) =>
+    modalDispatch({ type: show ? 'SHOW' : 'HIDE' })
 
   useEffect(() => {
     const closeIfDesktop = () => {
@@ -149,7 +162,7 @@ function App() {
         </main>
 
         {showModal && (
-          <NewProjectModal onClose={() => setShowModal(false)} />
+          <NewProjectModal onClose={() => modalDispatch({ type: 'HIDE' })} />
         )}
       </div>
     </>
