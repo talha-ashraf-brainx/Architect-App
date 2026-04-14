@@ -19,11 +19,13 @@ export function ProjectsSection({
   projectsDispatch,
 }: ProjectsSectionProps) {
 
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-
-
+  const [selectedTitle, setSelectedTitle] = useState<string | null>(null)
+  const selectedProject = selectedTitle
+    ? projects.find((p) => p.title === selectedTitle) ?? null
+    : null
 
   function deleteProject(title: string) {
+    if (selectedTitle === title) setSelectedTitle(null)
     projectsDispatch({ type: 'DELETE', title })
   }
 
@@ -31,7 +33,8 @@ export function ProjectsSection({
     return (
       <ProjectDetailsPanel
         project={selectedProject}
-        onBack={() => setSelectedProject(null)}
+        onBack={() => setSelectedTitle(null)}
+        projectsDispatch={projectsDispatch}
       />
     )
   }
@@ -55,10 +58,10 @@ export function ProjectsSection({
         {projects.map((p) => (
           <ProjectCard
             key={p.title}
-            onClick={() => setSelectedProject(p)}
+            onClick={() => setSelectedTitle(p.title)}
             title={p.title}
             description={p.description}
-            taskCount={p.taskCount}
+            taskCount={p.tasks.length}
             icon={p.icon}
             footerMeta={p.footerMeta}
             onDelete={() => deleteProject(p.title)}

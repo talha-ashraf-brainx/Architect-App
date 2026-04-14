@@ -1,50 +1,14 @@
+import type { Dispatch } from 'react'
+import { useState } from 'react'
 import { ProjectTaskTile } from './ProjectTaskTile'
-import type { ProjectTaskTileProps } from './ProjectTaskTile'
+import { AddTaskModal } from './AddTaskModal'
 import './ProjectDetailsPanel.css'
-import type { Project } from '../App'
-
-const DUMMY_TASKS: ProjectTaskTileProps[] = [
-  {
-    title: 'Review facade elevations',
-    status: 'in-progress',
-    dueLabel: 'Due Fri',
-    caption: 'Cross-check curtain wall against structural load diagrams.',
-  },
-  {
-    title: 'Material palette sign-off',
-    status: 'todo',
-    dueLabel: 'Due next week',
-    caption: 'Stone samples and metal finishes for the atrium.',
-  },
-  {
-    title: 'MEP coordination workshop',
-    status: 'todo',
-    caption: 'Align ceiling zones with mechanical routing.',
-  },
-  {
-    title: 'Site survey appendix',
-    status: 'done',
-    dueLabel: 'Completed',
-    caption: 'Photo log and boundary notes filed for permit set.',
-  },
-  {
-    title: 'Lighting study — gallery wing',
-    status: 'in-progress',
-    dueLabel: 'Due Wed',
-    caption: 'Lux levels and UV filtering for exhibition walls.',
-  },
-  {
-    title: 'Client narrative deck',
-    status: 'todo',
-    dueLabel: 'Draft',
-    caption: 'Short editorial story for the project landing page.',
-  },
-
-]
+import type { Project, ProjectsCommand } from '../App'
 
 type ProjectDetailsPanelProps = {
   project: Project
   onBack: () => void
+  projectsDispatch: Dispatch<ProjectsCommand>
 }
 
 function BackIcon() {
@@ -86,7 +50,13 @@ function PlusIcon() {
   )
 }
 
-export function ProjectDetailsPanel({ project, onBack }: ProjectDetailsPanelProps) {
+export function ProjectDetailsPanel({
+  project,
+  onBack,
+  projectsDispatch,
+}: ProjectDetailsPanelProps) {
+  const [addTaskOpen, setAddTaskOpen] = useState(false)
+
   return (
     <section
       className="project-details"
@@ -109,7 +79,7 @@ export function ProjectDetailsPanel({ project, onBack }: ProjectDetailsPanelProp
             {project.title}
           </h1>
           <span className="project-details__task-pill">
-            {project.taskCount} tasks
+            {project.tasks.length} tasks
           </span>
         </div>
         <p className="project-details__description">{project.description}</p>
@@ -122,20 +92,48 @@ export function ProjectDetailsPanel({ project, onBack }: ProjectDetailsPanelProp
             type="button"
             className="project-details__add-task"
             aria-label="Add task"
+            onClick={() => setAddTaskOpen(true)}
           >
             <PlusIcon />
           </button>
         </div>
         <p className="project-details__tasks-sub">
-          Placeholder workload for this canvas — swap for live data later.
+          Track deliverables and reviews for this project.
         </p>
       </div>
 
       <div className="project-details__task-grid">
-        {DUMMY_TASKS.map((task) => (
-          <ProjectTaskTile key={task.title} {...task} />
+        {project.tasks.map((task, index) => (
+          <ProjectTaskTile
+            key={task.title + String(index)}
+            title={task.title}
+            status={task.status}
+            caption={task.description}
+            onMarkDone={() =>
+              projectsDispatch({
+                type: 'MARK_TASK_DONE',
+                projectTitle: project.title,
+                taskIndex: index,
+              })
+            }
+            onDelete={() =>
+              projectsDispatch({
+                type: 'DELETE_TASK',
+                projectTitle: project.title,
+                taskIndex: index,
+              })
+            }
+          />
         ))}
       </div>
+
+      {addTaskOpen ? (
+        <AddTaskModal
+          onClose={() => setAddTaskOpen(false)}
+          projectsDispatch={projectsDispatch}
+          projectTitle={project.title}
+        />
+      ) : null}
     </section>
   )
 }

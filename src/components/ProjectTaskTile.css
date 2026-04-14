@@ -17,12 +17,101 @@
   transform: translateY(-1px);
 }
 
+.project-task-tile--done .project-task-tile__title,
+.project-task-tile--done .project-task-tile__caption {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.project-task-tile__header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.project-task-tile__actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.project-task-tile__mark-done {
+  margin: 0;
+  box-sizing: border-box;
+  min-height: 32px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--on-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.project-task-tile__mark-done:hover {
+  filter: brightness(1.08);
+}
+
+.project-task-tile__mark-done:active {
+  filter: brightness(0.96);
+  transform: scale(0.98);
+}
+
+.project-task-tile__mark-done:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  outline-offset: 2px;
+}
+
 .project-task-tile__top {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.project-task-tile__delete {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.project-task-tile__delete:hover {
+  background: color-mix(in srgb, var(--secondary-container) 40%, transparent);
+  color: var(--primary);
+}
+
+.project-task-tile__delete:focus-visible {
+  outline: 1px solid color-mix(in srgb, var(--outline-variant) 20%, transparent);
+  outline-offset: 2px;
+}
+
+.project-task-tile__trash-icon {
+  width: 18px;
+  height: 18px;
 }
 
 .project-task-tile__status {
@@ -33,11 +122,6 @@
   padding: 4px 10px;
   border-radius: var(--radius-full);
   width: fit-content;
-}
-
-.project-task-tile__status--todo {
-  background: color-mix(in srgb, var(--surface-container) 80%, transparent);
-  color: var(--on-surface-variant);
 }
 
 .project-task-tile__status--in-progress {

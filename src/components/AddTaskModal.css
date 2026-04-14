@@ -1,0 +1,64 @@
+.add-task-modal__toggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background: var(--surface-bright);
+  box-sizing: border-box;
+  gap: 4px;
+}
+
+.add-task-modal__toggle-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 6px);
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  z-index: 0;
+  pointer-events: none;
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.add-task-modal__toggle-thumb--done {
+  transform: translateX(calc(100% + 4px));
+}
+
+.add-task-modal__toggle-btn {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  transition: color 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-task-modal__toggle-btn:hover:not(.add-task-modal__toggle-btn--selected) {
+  color: var(--on-surface);
+}
+
+.add-task-modal__toggle-btn--selected {
+  color: var(--on-primary);
+}
+
+.add-task-modal__toggle-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary) 40%, transparent);
+  outline-offset: 2px;
+}
+
+.new-project-modal__fields .add-task-modal__toggle {
+  margin-bottom: 0;
+}

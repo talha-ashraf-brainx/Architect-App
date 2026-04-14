@@ -10,38 +10,45 @@ import { AppFooter } from './components/AppFooter'
 import { NewProjectModal } from './components/NewProjectModal'
 import type { IconId, ProjectCardFooterMeta } from './components/ProjectCard'
 
+export type ProjectTaskStatus = 'in-progress' | 'done'
+
+export type ProjectTask = {
+  title: string
+  description: string
+  status: ProjectTaskStatus
+}
+
 export type Project = {
   title: string
   description: string
-  taskCount: number
   icon: IconId
   footerMeta: ProjectCardFooterMeta
+  tasks: ProjectTask[]
 }
 
 export type ProjectsCommand =
   | { type: 'ADD'; title: string; description: string }
   | { type: 'DELETE'; title: string }
+  | { type: 'ADD_TASK'; projectTitle: string; task: ProjectTask }
+  | { type: 'DELETE_TASK'; projectTitle: string; taskIndex: number }
+  | { type: 'MARK_TASK_DONE'; projectTitle: string; taskIndex: number }
 
 const PROJECT_CARD_ATTRIBUTE_SAMPLES: Array<
-  Pick<Project, 'taskCount' | 'icon' | 'footerMeta'>
+  Pick<Project, 'icon' | 'footerMeta'>
 > = [
     {
-      taskCount: 12,
       icon: 'layers',
       footerMeta: { type: 'avatars', extraCount: 3 },
     },
     {
-      taskCount: 8,
       icon: 'pencil',
       footerMeta: { type: 'time', label: 'Update 2h ago' },
     },
     {
-      taskCount: 15,
       icon: 'building',
       footerMeta: { type: 'overdue' },
     },
     {
-      taskCount: 5,
       icon: 'compass',
       footerMeta: { type: 'drafting' },
     },
@@ -51,13 +58,9 @@ function pick<T>(items: readonly T[]): T {
   return items[Math.floor(Math.random() * items.length)]!
 }
 
-function randomProjectCardAttributes(): Pick<
-  Project,
-  'taskCount' | 'icon' | 'footerMeta'
-> {
+function randomProjectCardAttributes(): Pick<Project, 'icon' | 'footerMeta'> {
   const s = PROJECT_CARD_ATTRIBUTE_SAMPLES
   return {
-    taskCount: pick(s.map((row) => row.taskCount)),
     icon: pick(s.map((row) => row.icon)),
     footerMeta: pick(s.map((row) => row.footerMeta)) as ProjectCardFooterMeta,
   }
@@ -71,11 +74,38 @@ function projectsReducer(state: Project[], action: ProjectsCommand): Project[] {
         title: action.title,
         description: action.description,
         ...attrs,
+        tasks: [],
       }
       return [...state, project]
     }
     case 'DELETE':
       return state.filter((p) => p.title !== action.title)
+    case 'ADD_TASK':
+      return state.map((p) =>
+        p.title === action.projectTitle
+          ? { ...p, tasks: [...p.tasks, action.task] }
+          : p,
+      )
+    case 'DELETE_TASK':
+      return state.map((p) =>
+        p.title === action.projectTitle
+          ? {
+              ...p,
+              tasks: p.tasks.filter((_, i) => i !== action.taskIndex),
+            }
+          : p,
+      )
+    case 'MARK_TASK_DONE':
+      return state.map((p) =>
+        p.title === action.projectTitle
+          ? {
+              ...p,
+              tasks: p.tasks.map((t, i) =>
+                i === action.taskIndex ? { ...t, status: 'done' as const } : t,
+              ),
+            }
+          : p,
+      )
   }
 }
 
