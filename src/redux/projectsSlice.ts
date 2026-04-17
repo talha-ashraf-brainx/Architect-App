@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
 export type ProjectTaskStatus = 'in-progress' | 'done'
 export type IconId = 'layers' | 'pencil' | 'building' | 'compass'
@@ -69,6 +69,18 @@ function normalizeProject(row: ApiProject): Project {
     }
 }
 
+function normalizeTask(row: ApiProjectTask): ProjectTask {
+    return {
+        id: row.id,
+        projectId: row.projectId,
+        name: row.name,
+        description: row.description,
+        markDone: row.markDone,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+    }
+}
+
 export const fetchProjects = createAsyncThunk<Project[]>(
     'projects/fetchProjects',
     async () => {
@@ -127,6 +139,72 @@ export const addProject = createAsyncThunk<Project, { name: string; description:
     },
 )
 
+export const deleteTask = createAsyncThunk<
+    { projectId: number; taskId: number },
+    { projectId: number; taskId: number }
+>(
+    'projects/deleteTask',
+    async ({ projectId, taskId }) => {
+        const res = await fetch(`/api/projects/${projectId}/tasks/${taskId}`, {
+            method: 'DELETE',
+        })
+        if (!res.ok) {
+            throw new Error('Failed to delete task')
+        }
+
+        return { projectId, taskId }
+    },
+)
+
+export const addTask = createAsyncThunk<ProjectTask, { projectId: number; name: string; description: string; markDone: boolean }>(
+    'projects/addTask',
+    async ({ projectId, name, description, markDone }) => {
+        const response = await fetch(`/api/projects/${projectId}/tasks`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, description, markDone }),
+        })
+        if (!response.ok) {
+            throw new Error('Failed to add task')
+        }
+        const text = await response.text()
+        if (!text) {
+            throw new Error('Failed to add task')
+        }
+        let raw: ApiProjectTask
+        try {
+            raw = JSON.parse(text) as ApiProjectTask
+        } catch {
+            throw new Error('Failed to add task')
+        }
+        return normalizeTask(raw)
+    },
+)
+
+export const markTaskDone = createAsyncThunk<
+    { projectId: number; taskId: number },
+    { projectId: number; taskId: number }
+>(
+    'projects/markTaskDone',
+    async ({ projectId, taskId }) => {
+        if (projectId < 0 || taskId < 0) {
+            return { projectId, taskId }
+        }
+        const response = await fetch(
+            `/api/projects/${projectId}/tasks/${taskId}/done`,
+            {
+                method: 'POST',
+            },
+        )
+        if (!response.ok) {
+            throw new Error('Failed to mark task done')
+        }
+        return { projectId, taskId }
+    },
+)
+
 interface ProjectState {
     projects: Project[],
     loading: boolean,
@@ -142,66 +220,7 @@ const initialState: ProjectState = {
 export const projectsSlice = createSlice({
     name: 'projects',
     initialState,
-    reducers: {
-        addTask: (
-            state,
-            action: PayloadAction<{
-                projectId: number
-                name: string
-                description: string
-                markDone: boolean
-            }>,
-        ) => {
-            const { projectId, name, description, markDone } = action.payload
-            const p = state.projects.find((x) => x.id === projectId)
-            if (!p) return
-            const now = new Date().toISOString()
-            const nextTaskId = Math.min(0, ...p.tasks.map((t) => t.id)) - 1
-            p.tasks.push({
-                id: nextTaskId,
-                projectId: p.id,
-                name,
-                description,
-                markDone,
-                createdAt: now,
-                updatedAt: now,
-            })
-            p.footerMeta = {
-                ...p.footerMeta,
-                taskCount: p.tasks.length,
-            }
-            p.updatedAt = now
-        },
-        deleteTask: (
-            state,
-            action: PayloadAction<{ projectId: number; taskId: number }>,
-        ) => {
-            const { projectId, taskId } = action.payload
-            const p = state.projects.find((x) => x.id === projectId)
-            if (!p) return
-            p.tasks = p.tasks.filter((t) => t.id !== taskId)
-            const now = new Date().toISOString()
-            p.footerMeta = {
-                ...p.footerMeta,
-                taskCount: p.tasks.length,
-            }
-            p.updatedAt = now
-        },
-        markTaskDone: (
-            state,
-            action: PayloadAction<{ projectId: number; taskId: number }>,
-        ) => {
-            const { projectId, taskId } = action.payload
-            const p = state.projects.find((x) => x.id === projectId)
-            if (!p) return
-            const t = p.tasks.find((x) => x.id === taskId)
-            if (!t) return
-            const now = new Date().toISOString()
-            t.markDone = true
-            t.updatedAt = now
-            p.updatedAt = now
-        },
-    },
+    reducers: { },
 
     extraReducers: (builder) => {
         builder
@@ -225,12 +244,34 @@ export const projectsSlice = createSlice({
           .addCase(addProject.fulfilled, (state, action) => {
             state.projects = [...state.projects, action.payload]
           })
-          
+          .addCase(deleteTask.fulfilled, (state, action) => {
+            state.projects = state.projects.map((p) => {
+                if (p.id === action.payload.projectId) {
+                    return { ...p, tasks: p.tasks.filter((t) => t.id !== action.payload.taskId) }
+                }
+                return p
+            })
+          })
+          .addCase(addTask.fulfilled, (state, action) => {
+            state.projects = state.projects.map((p) => {
+                if (p.id === action.payload.projectId) {
+                    return { ...p, tasks: [...p.tasks, action.payload] }
+                }
+                return p
+            })
+          })
          
+          .addCase(markTaskDone.fulfilled, (state, action) => {
+            const { projectId, taskId } = action.payload
+            const p = state.projects.find((x) => x.id === projectId)
+            if (!p) return
+            const t = p.tasks.find((x) => x.id === taskId)
+            if (!t) return
+            const now = new Date().toISOString()
+            t.markDone = true
+            t.updatedAt = now
+            p.updatedAt = now
+          })
       }})
 
-export const {
-    addTask,
-    deleteTask,
-    markTaskDone,
-} = projectsSlice.actions
+
