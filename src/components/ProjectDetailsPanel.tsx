@@ -1,9 +1,9 @@
-import { useState } from 'react'
 import { ProjectTaskTile } from './ProjectTaskTile'
 import { AddTaskModal } from './AddTaskModal'
 import './ProjectDetailsPanel.css'
 import type { Project } from '../redux/projectsSlice'
 import { BackIcon, PlusIcon } from './icons'
+import useModal from '../hooks/useModal'
 
 type ProjectDetailsPanelProps = {
   project: Project
@@ -14,7 +14,8 @@ export function ProjectDetailsPanel({
   project,
   onBack,
 }: ProjectDetailsPanelProps) {
-  const [addTaskOpen, setAddTaskOpen] = useState(false)
+  const { showModal: addTaskModalOpen, setShowModal: setAddTaskModalOpen } =
+    useModal()
 
   return (
     <section
@@ -51,7 +52,7 @@ export function ProjectDetailsPanel({
             type="button"
             className="project-details__add-task"
             aria-label="Add task"
-            onClick={() => setAddTaskOpen(true)}
+            onClick={() => setAddTaskModalOpen(true)}
           >
             <PlusIcon />
           </button>
@@ -74,9 +75,9 @@ export function ProjectDetailsPanel({
         ))}
       </div>
 
-      {addTaskOpen ? (
+      {addTaskModalOpen ? (
         <AddTaskModal
-          onClose={() => setAddTaskOpen(false)}
+          onClose={() => setAddTaskModalOpen(false)}
           projectId={project.id}
         />
       ) : null}

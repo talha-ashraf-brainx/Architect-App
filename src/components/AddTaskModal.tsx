@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import './NewProjectModal.css'
 import './AddTaskModal.css'
 import type { ProjectTaskStatus } from '../redux/projectsSlice'
@@ -26,22 +26,6 @@ export function AddTaskModal({
   const [titleError, setTitleError] = useState<string | null>(null)
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState<ProjectTaskStatus>('in-progress')
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
-  useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prev
-    }
-  }, [])
 
   return (
     <div

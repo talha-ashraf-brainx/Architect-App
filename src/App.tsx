@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react'
+import { useEffect } from 'react'
 import './App.css'
 import { SidebarBrand } from './components/SidebarBrand'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -13,76 +13,21 @@ import SettingsPage from './components/SettingsPage'
 import { useAppDispatch, useAppSelector } from './redux/hooks'
 import { CloseIcon, MenuIcon } from './components/icons'
 import { fetchProjects } from './redux/projectsSlice'
+import useSidebar from './hooks/useSidebar'
+import useModal from './hooks/useModal';
 
-type ModalAction = { type: 'SHOW' } | { type: 'HIDE' }
-
-function modalReducer(_state: boolean, action: ModalAction): boolean {
-  switch (action.type) {
-    case 'SHOW':
-      return true
-    case 'HIDE':
-      return false
-  }
-}
 
 function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [showModal, modalDispatch] = useReducer(modalReducer, false)
-  const setShowModal = (show: boolean) =>
-    modalDispatch({ type: show ? 'SHOW' : 'HIDE' })
   const dispatch = useAppDispatch()
-
-  useEffect(() => {
-    const closeIfDesktop = () => {
-      if (window.matchMedia('(min-width: 1025px)').matches) {
-        setSidebarOpen(false)
-      }
-    }
-    window.addEventListener('resize', closeIfDesktop)
-    return () => window.removeEventListener('resize', closeIfDesktop)
-  }, [])
-
-  useEffect(() => {
-    if (!sidebarOpen) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSidebarOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [sidebarOpen])
-
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1024px)')
-    if (!mq.matches) {
-      document.body.style.overflow = ''
-      return
-    }
-    if (sidebarOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [sidebarOpen])
-
-  useEffect(() => {
-    if (!showModal) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prev
-    }
-  }, [showModal])
+  const { sidebarOpen, setSidebarOpen } = useSidebar()
+  const { showModal, setShowModal } = useModal()
 
   useEffect(() => {
     dispatch(fetchProjects())
   }, [dispatch])
 
- 
-  const slice = useAppSelector((state) => state.projects)
-  const { projects, loading, error } = slice
+  const projectsSlice = useAppSelector((state) => state.projects)
+  const { projects, loading, error } = projectsSlice
 
   if (loading) return <div>Loading...</div>
   if (error) return <div>Error: {error}</div>
@@ -157,7 +102,7 @@ function App() {
         </main>
 
         {showModal && (
-          <NewProjectModal onClose={() => modalDispatch({ type: 'HIDE' })} />
+          <NewProjectModal onClose={() => setShowModal(false)} />
         )}
       </div>
     </>

@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import './NewProjectModal.css'
 import { useAppDispatch } from '../redux/hooks'
 import { addProject } from '../redux/projectsSlice'
@@ -17,14 +17,6 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
 
   const [newProject, setNewProject] = useState({ title: '', description: '' })
   const [titleError, setTitleError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
 
   return (
     <div
