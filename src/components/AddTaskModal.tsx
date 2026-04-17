@@ -20,8 +20,10 @@ export function AddTaskModal({
   const statusLabelId = useId()
   const nameId = useId()
   const descId = useId()
+  const titleErrorId = useId()
 
   const [title, setTitle] = useState('')
+  const [titleError, setTitleError] = useState<string | null>(null)
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState<ProjectTaskStatus>('in-progress')
 
@@ -72,13 +74,26 @@ export function AddTaskModal({
           </label>
           <input
             id={nameId}
-            className="new-project-modal__input"
+            className={
+              'new-project-modal__input' +
+              (titleError ? ' new-project-modal__input--invalid' : '')
+            }
             type="text"
             placeholder="e.g., Review structural notes"
             autoComplete="off"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            aria-invalid={titleError != null}
+            aria-describedby={titleError ? titleErrorId : undefined}
+            onChange={(e) => {
+              setTitleError(null)
+              setTitle(e.target.value)
+            }}
           />
+          {titleError ? (
+            <p id={titleErrorId} className="new-project-modal__field-error" role="alert">
+              {titleError}
+            </p>
+          ) : null}
 
           <label className="new-project-modal__label" htmlFor={descId}>
             Description
@@ -146,10 +161,15 @@ export function AddTaskModal({
             type="button"
             className="new-project-modal__create"
             onClick={() => {
+              const name = title.trim()
+              if (!name) {
+                setTitleError('Title is required')
+                return
+              }
               dispatch(
                 addTask({
                   projectId,
-                  name: title,
+                  name,
                   description,
                   markDone: status === 'done',
                 }),

@@ -105,6 +105,24 @@
   outline-offset: 0;
 }
 
+.new-project-modal__input--invalid {
+  outline: 2px solid color-mix(in srgb, #b3261e 55%, transparent);
+  outline-offset: 0;
+}
+
+.new-project-modal__input--invalid:focus-visible {
+  outline-color: color-mix(in srgb, #b3261e 65%, transparent);
+}
+
+.new-project-modal__field-error {
+  margin: -8px 0 4px;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: #b3261e;
+  text-align: start;
+}
+
 .new-project-modal__textarea {
   min-height: 112px;
   resize: vertical;

@@ -13,8 +13,10 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
   const titleId = useId()
   const nameId = useId()
   const descId = useId()
+  const titleErrorId = useId()
 
   const [newProject, setNewProject] = useState({ title: '', description: '' })
+  const [titleError, setTitleError] = useState<string | null>(null)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -55,13 +57,26 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
           </label>
           <input
             id={nameId}
-            className="new-project-modal__input"
+            className={
+              'new-project-modal__input' +
+              (titleError ? ' new-project-modal__input--invalid' : '')
+            }
             type="text"
             placeholder="e.g., Skyline Residential"
             autoComplete="off"
             value={newProject.title}
-            onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+            aria-invalid={titleError != null}
+            aria-describedby={titleError ? titleErrorId : undefined}
+            onChange={(e) => {
+              setTitleError(null)
+              setNewProject({ ...newProject, title: e.target.value })
+            }}
           />
+          {titleError ? (
+            <p id={titleErrorId} className="new-project-modal__field-error" role="alert">
+              {titleError}
+            </p>
+          ) : null}
 
           <label className="new-project-modal__label" htmlFor={descId}>
             Description
@@ -88,9 +103,14 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
             type="button"
             className="new-project-modal__create"
             onClick={() => {
+              const name = newProject.title.trim()
+              if (!name) {
+                setTitleError('Title is required')
+                return
+              }
               dispatch(
                 addProject({
-                  name: newProject.title,
+                  name,
                   description: newProject.description,
                 }),
               )
