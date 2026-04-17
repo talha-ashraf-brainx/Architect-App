@@ -5,43 +5,39 @@ import type { IconId, ProjectCardFooterMeta } from '../redux/projectsSlice'
 import { CardIcon, TasksIcon, TrashIcon } from './icons'
 
 type ProjectCardProps = {
-  title: string
+  projectId: number
+  name: string
   description: string
-  taskCount: number
   icon: IconId
   footerMeta: ProjectCardFooterMeta
   onClick?: () => void
 }
 
+function formatCreatedAt(iso: string) {
+  try {
+    return new Date(iso).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  } catch {
+    return iso
+  }
+}
+
 function FooterRight({ meta }: { meta: ProjectCardFooterMeta }) {
-  if (meta.type === 'avatars') {
-    return (
-      <div className="project-card__avatars" aria-hidden>
-        <span className="project-card__avatar project-card__avatar--a" />
-        <span className="project-card__avatar project-card__avatar--b" />
-        <span className="project-card__avatar-more">+{meta.extraCount}</span>
-      </div>
-    )
-  }
-  if (meta.type === 'time') {
-    return <span className="project-card__time-pill">{meta.label}</span>
-  }
-  if (meta.type === 'overdue') {
-    return (
-      <span className="project-card__overdue">
-        <span className="project-card__overdue-dot" />
-        Overdue
-      </span>
-    )
-  }
-  return <span className="project-card__drafting">Drafting</span>
+  return (
+    <span className="project-card__time-pill">
+      {formatCreatedAt(meta.createdAt)}
+    </span>
+  )
 }
 
 export function ProjectCard({
   onClick,
-  title,
+  projectId,
+  name,
   description,
-  taskCount,
   icon,
   footerMeta,
 }: ProjectCardProps) {
@@ -55,22 +51,22 @@ export function ProjectCard({
         <button
           type="button"
           className="project-card__delete"
-          aria-label={`Delete ${title}`}
+          aria-label={`Delete ${name}`}
           onClick={(e) => {
             e.stopPropagation()
-            dispatch(deleteProject(title))
+            dispatch(deleteProject(projectId))
           }}
         >
           <TrashIcon className="project-card__trash-icon" />
         </button>
       </div>
-      <h3 className="project-card__title">{title}</h3>
+      <h3 className="project-card__title">{name}</h3>
       <p className="project-card__description">{description}</p>
       <div className="project-card__footer">
         <div className="project-card__tasks">
           <TasksIcon />
           <span className="project-card__tasks-label">
-            {taskCount} tasks
+            {footerMeta.taskCount} tasks
           </span>
         </div>
         <FooterRight meta={footerMeta} />

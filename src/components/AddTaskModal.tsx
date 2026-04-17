@@ -1,19 +1,19 @@
 import { useEffect, useId, useState } from 'react'
 import './NewProjectModal.css'
 import './AddTaskModal.css'
-import type { ProjectTaskStatus } from '../App'
+import type { ProjectTaskStatus } from '../redux/projectsSlice'
 import { useAppDispatch } from '../redux/hooks'
 import { addTask } from '../redux/projectsSlice'
 import { ChecklistIcon } from './icons'
 
 type AddTaskModalProps = {
   onClose: () => void
-  projectTitle: string
+  projectId: number
 }
 
 export function AddTaskModal({
   onClose,
-  projectTitle,
+  projectId,
 }: AddTaskModalProps) {
   const dispatch = useAppDispatch()
   const headingId = useId()
@@ -148,8 +148,10 @@ export function AddTaskModal({
             onClick={() => {
               dispatch(
                 addTask({
-                  projectTitle,
-                  task: { title, description, status },
+                  projectId,
+                  name: title,
+                  description,
+                  markDone: status === 'done',
                 }),
               )
               onClose()

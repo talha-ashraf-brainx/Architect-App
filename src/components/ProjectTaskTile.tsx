@@ -1,16 +1,16 @@
 import './ProjectTaskTile.css'
-import type { ProjectTaskStatus } from '../App'
+import type { ProjectTaskStatus } from '../redux/projectsSlice'
 import { useAppDispatch } from '../redux/hooks'
 import { deleteTask, markTaskDone } from '../redux/projectsSlice'
 import { TrashIcon } from './icons'
 
 export type ProjectTaskTileProps = {
-  title: string
-  status: ProjectTaskStatus
+  name: string
+  markDone: boolean
   dueLabel?: string
   caption?: string
-  projectTitle: string
-  taskIndex: number
+  projectId: number
+  taskId: number
 }
 
 const STATUS_LABEL: Record<ProjectTaskStatus, string> = {
@@ -19,15 +19,16 @@ const STATUS_LABEL: Record<ProjectTaskStatus, string> = {
 }
 
 export function ProjectTaskTile({
-  title,
-  status,
+  name,
+  markDone,
   dueLabel,
   caption,
-  projectTitle,
-  taskIndex,
+  projectId,
+  taskId,
 }: ProjectTaskTileProps) {
   const dispatch = useAppDispatch()
-  const isDone = status === 'done'
+  const status: ProjectTaskStatus = markDone ? 'done' : 'in-progress'
+  const isDone = markDone
 
   return (
     <article
@@ -56,7 +57,7 @@ export function ProjectTaskTile({
               onClick={(e) => {
                 e.stopPropagation()
                 dispatch(
-                  markTaskDone({ projectTitle, taskIndex }),
+                  markTaskDone({ projectId, taskId }),
                 )
               }}
             >
@@ -66,11 +67,11 @@ export function ProjectTaskTile({
           <button
             type="button"
             className="project-task-tile__delete"
-            aria-label={'Delete task ' + title}
+            aria-label={'Delete task ' + name}
             onClick={(e) => {
               e.stopPropagation()
               dispatch(
-                deleteTask({ projectTitle, taskIndex }),
+                deleteTask({ projectId, taskId }),
               )
             }}
           >
@@ -78,7 +79,7 @@ export function ProjectTaskTile({
           </button>
         </div>
       </div>
-      <h3 className="project-task-tile__title">{title}</h3>
+      <h3 className="project-task-tile__title">{name}</h3>
       {caption ? (
         <p className="project-task-tile__caption">{caption}</p>
       ) : null}

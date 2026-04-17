@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ProjectTaskTile } from './ProjectTaskTile'
 import { AddTaskModal } from './AddTaskModal'
 import './ProjectDetailsPanel.css'
-import type { Project } from '../App'
+import type { Project } from '../redux/projectsSlice'
 import { BackIcon, PlusIcon } from './icons'
 
 type ProjectDetailsPanelProps = {
@@ -35,7 +35,7 @@ export function ProjectDetailsPanel({
       <header className="project-details__header">
         <div className="project-details__heading">
           <h1 id="project-details-title" className="project-details__title">
-            {project.title}
+            {project.name}
           </h1>
           <span className="project-details__task-pill">
             {project.tasks.length} tasks
@@ -62,14 +62,14 @@ export function ProjectDetailsPanel({
       </div>
 
       <div className="project-details__task-grid">
-        {project.tasks.map((task, index) => (
+        {project.tasks.map((task) => (
           <ProjectTaskTile
-            key={task.title + String(index)}
-            title={task.title}
-            status={task.status}
+            key={task.id}
+            name={task.name}
+            markDone={task.markDone}
             caption={task.description}
-            projectTitle={project.title}
-            taskIndex={index}
+            projectId={project.id}
+            taskId={task.id}
           />
         ))}
       </div>
@@ -77,7 +77,7 @@ export function ProjectDetailsPanel({
       {addTaskOpen ? (
         <AddTaskModal
           onClose={() => setAddTaskOpen(false)}
-          projectTitle={project.title}
+          projectId={project.id}
         />
       ) : null}
     </section>

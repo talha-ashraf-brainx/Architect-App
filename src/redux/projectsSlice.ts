@@ -1,124 +1,235 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 export type ProjectTaskStatus = 'in-progress' | 'done'
 export type IconId = 'layers' | 'pencil' | 'building' | 'compass'
-export type ProjectCardFooterMeta =
-    | { type: 'avatars'; extraCount: number }
-    | { type: 'time'; label: string }
-    | { type: 'overdue' }
-    | { type: 'drafting' }
+
+const PROJECT_ICONS: IconId[] = ['layers', 'pencil', 'building', 'compass']
+
+export function iconIdForProject(id: number): IconId {
+    return PROJECT_ICONS[Math.abs(id) % PROJECT_ICONS.length]!
+}
+
+export type ProjectCardFooterMeta = {
+    taskCount: number
+    createdAt: string
+}
 
 export type ProjectTask = {
-    title: string
+    id: number
+    projectId: number
+    name: string
     description: string
-    status: ProjectTaskStatus
+    markDone: boolean
+    createdAt: string
+    updatedAt: string
 }
 
 export type Project = {
-    title: string
+    id: number
+    name: string
     description: string
-    icon: IconId
+    createdAt: string
+    updatedAt: string
     footerMeta: ProjectCardFooterMeta
     tasks: ProjectTask[]
 }
 
-const PROJECT_CARD_ATTRIBUTE_SAMPLES: Array<
-    Pick<Project, 'icon' | 'footerMeta'>
-> = [
-        {
-            icon: 'layers',
-            footerMeta: { type: 'avatars', extraCount: 3 },
-        },
-        {
-            icon: 'pencil',
-            footerMeta: { type: 'time', label: 'Update 2h ago' },
-        },
-        {
-            icon: 'building',
-            footerMeta: { type: 'overdue' },
-        },
-        {
-            icon: 'compass',
-            footerMeta: { type: 'drafting' },
-        },
-    ]
-
-function pick<T>(items: readonly T[]): T {
-    return items[Math.floor(Math.random() * items.length)]!
+type ApiProjectTask = {
+    id: number
+    projectId: number
+    name: string
+    description: string
+    markDone: boolean
+    createdAt: string
+    updatedAt: string
 }
 
-function randomProjectCardAttributes(): Pick<Project, 'icon' | 'footerMeta'> {
-    const s = PROJECT_CARD_ATTRIBUTE_SAMPLES
+type ApiProject = {
+    id: number
+    name: string
+    description: string
+    createdAt: string
+    updatedAt: string
+    tasks?: ApiProjectTask[]
+}
+
+function normalizeProject(row: ApiProject): Project {
+    const tasks = row.tasks ?? []
     return {
-        icon: pick(s.map((row) => row.icon)),
-        footerMeta: pick(s.map((row) => row.footerMeta)) as ProjectCardFooterMeta,
+        id: row.id,
+        name: row.name,
+        description: row.description,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        tasks: tasks.map((t) => ({ ...t })),
+        footerMeta: {
+            taskCount: tasks.length,
+            createdAt: row.createdAt,
+        },
     }
 }
 
+export const fetchProjects = createAsyncThunk<Project[]>(
+    'projects/fetchProjects',
+    async () => {
+      const response = await fetch('/api/projects')
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch projects')
+      }
+
+      const data: ApiProject[] = await response.json()
+      return data.map(normalizeProject)
+    }
+  )
+
+export const deleteProject = createAsyncThunk<number, number>(
+    'projects/deleteProject',
+    async (projectId) => {
+        if (projectId < 0) {
+            return projectId
+        }
+        const response = await fetch(`/api/projects/${projectId}`, {
+            method: 'DELETE',
+        })
+        if (!response.ok) {
+            throw new Error('Failed to delete project')
+        }
+        return projectId
+    },
+)
+
+export const addProject = createAsyncThunk<Project, { name: string; description: string }>(
+    'projects/addProject',
+    async (project: { name: string; description: string }) => {
+        const response = await fetch('/api/projects', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(project),
+        })
+        if (!response.ok) {
+            throw new Error('Failed to add project')
+        }
+        const text = await response.text()
+        if (!text) {
+            throw new Error('Failed to add project')
+        }
+        let raw: ApiProject
+        try {
+            raw = JSON.parse(text) as ApiProject
+            console.log(raw)
+        } catch {
+            throw new Error('Failed to add project')
+        }
+        return normalizeProject(raw)
+    },
+)
+
 interface ProjectState {
-    projects: Project[]
+    projects: Project[],
+    loading: boolean,
+    error: string | null,
 }
 
 const initialState: ProjectState = {
     projects: [],
+    loading: false,
+    error: null,
 }
 
 export const projectsSlice = createSlice({
     name: 'projects',
     initialState,
     reducers: {
-        addProject: (
-            state,
-            action: PayloadAction<{ title: string; description: string }>,
-        ) => {
-            const attrs = randomProjectCardAttributes()
-            state.projects.push({
-                title: action.payload.title,
-                description: action.payload.description,
-                ...attrs,
-                tasks: [],
-            })
-        },
-        deleteProject: (state, action: PayloadAction<string>) => {
-            state.projects = state.projects.filter(
-                (project) => project.title !== action.payload,
-            )
-        },
         addTask: (
             state,
-            action: PayloadAction<{ projectTitle: string; task: ProjectTask }>,
+            action: PayloadAction<{
+                projectId: number
+                name: string
+                description: string
+                markDone: boolean
+            }>,
         ) => {
-            const { projectTitle, task } = action.payload
-            const p = state.projects.find((x) => x.title === projectTitle)
+            const { projectId, name, description, markDone } = action.payload
+            const p = state.projects.find((x) => x.id === projectId)
             if (!p) return
-            p.tasks.push(task)
+            const now = new Date().toISOString()
+            const nextTaskId = Math.min(0, ...p.tasks.map((t) => t.id)) - 1
+            p.tasks.push({
+                id: nextTaskId,
+                projectId: p.id,
+                name,
+                description,
+                markDone,
+                createdAt: now,
+                updatedAt: now,
+            })
+            p.footerMeta = {
+                ...p.footerMeta,
+                taskCount: p.tasks.length,
+            }
+            p.updatedAt = now
         },
         deleteTask: (
             state,
-            action: PayloadAction<{ projectTitle: string; taskIndex: number }>,
+            action: PayloadAction<{ projectId: number; taskId: number }>,
         ) => {
-            const { projectTitle, taskIndex } = action.payload
-            const p = state.projects.find((x) => x.title === projectTitle)
+            const { projectId, taskId } = action.payload
+            const p = state.projects.find((x) => x.id === projectId)
             if (!p) return
-            p.tasks = p.tasks.filter((_, i) => i !== taskIndex)
+            p.tasks = p.tasks.filter((t) => t.id !== taskId)
+            const now = new Date().toISOString()
+            p.footerMeta = {
+                ...p.footerMeta,
+                taskCount: p.tasks.length,
+            }
+            p.updatedAt = now
         },
         markTaskDone: (
             state,
-            action: PayloadAction<{ projectTitle: string; taskIndex: number }>,
+            action: PayloadAction<{ projectId: number; taskId: number }>,
         ) => {
-            const { projectTitle, taskIndex } = action.payload
-            const p = state.projects.find((x) => x.title === projectTitle)
+            const { projectId, taskId } = action.payload
+            const p = state.projects.find((x) => x.id === projectId)
             if (!p) return
-            p.tasks = p.tasks.map((t, i) =>
-                i === taskIndex ? { ...t, status: 'done' as const } : t,
-            )
+            const t = p.tasks.find((x) => x.id === taskId)
+            if (!t) return
+            const now = new Date().toISOString()
+            t.markDone = true
+            t.updatedAt = now
+            p.updatedAt = now
         },
     },
-})
+
+    extraReducers: (builder) => {
+        builder
+          .addCase(fetchProjects.pending, (state) => {
+            state.loading = true
+            state.error = null
+          })
+          .addCase(fetchProjects.fulfilled, (state, action) => {
+            state.loading = false
+            state.projects = action.payload
+          })
+          .addCase(fetchProjects.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.error.message ?? 'Something went wrong'
+          })
+          .addCase(deleteProject.fulfilled, (state, action) => {
+            state.projects = state.projects.filter(
+                (p) => p.id !== action.payload,
+            )
+          })
+          .addCase(addProject.fulfilled, (state, action) => {
+            state.projects = [...state.projects, action.payload]
+          })
+          
+         
+      }})
 
 export const {
-    addProject,
-    deleteProject,
     addTask,
     deleteTask,
     markTaskDone,

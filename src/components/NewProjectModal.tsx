@@ -90,7 +90,7 @@ export function NewProjectModal({ onClose }: NewProjectModalProps) {
             onClick={() => {
               dispatch(
                 addProject({
-                  title: newProject.title,
+                  name: newProject.title,
                   description: newProject.description,
                 }),
               )

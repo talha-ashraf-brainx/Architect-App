@@ -3,7 +3,7 @@ import { SidebarNewProject } from './SidebarNewProject'
 import { ProjectCard } from './ProjectCard'
 import { NewDraftCard } from './NewDraftCard'
 import './ProjectsSection.css'
-import type { Project } from '../App'
+import { type Project, iconIdForProject } from '../redux/projectsSlice'
 import { ProjectDetailsPanel } from './ProjectDetailsPanel'
 
 type ProjectsSectionProps = {
@@ -16,16 +16,16 @@ export function ProjectsSection({
   projects,
 }: ProjectsSectionProps) {
 
-  const [selectedTitle, setSelectedTitle] = useState<string | null>(null)
-  const selectedProject = selectedTitle
-    ? projects.find((p) => p.title === selectedTitle) ?? null
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const selectedProject = selectedId != null
+    ? projects.find((p) => p.id === selectedId) ?? null
     : null
 
   if (selectedProject) {
     return (
       <ProjectDetailsPanel
         project={selectedProject}
-        onBack={() => setSelectedTitle(null)}
+        onBack={() => setSelectedId(null)}
       />
     )
   }
@@ -48,12 +48,12 @@ export function ProjectsSection({
       <div className="projects-section__grid">
         {projects.map((p) => (
           <ProjectCard
-            key={p.title}
-            onClick={() => setSelectedTitle(p.title)}
-            title={p.title}
+            key={p.id}
+            onClick={() => setSelectedId(p.id)}
+            projectId={p.id}
+            name={p.name}
             description={p.description}
-            taskCount={p.tasks.length}
-            icon={p.icon}
+            icon={iconIdForProject(p.id)}
             footerMeta={p.footerMeta}
           />
         ))}

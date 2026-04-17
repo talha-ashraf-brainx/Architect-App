@@ -10,25 +10,9 @@ import { ProjectsSection } from './components/ProjectsSection'
 import { AppFooter } from './components/AppFooter'
 import { NewProjectModal } from './components/NewProjectModal'
 import SettingsPage from './components/SettingsPage'
-import { useAppSelector } from './redux/hooks'
-import type { IconId, ProjectCardFooterMeta } from './redux/projectsSlice'
+import { useAppDispatch, useAppSelector } from './redux/hooks'
 import { CloseIcon, MenuIcon } from './components/icons'
-
-export type ProjectTaskStatus = 'in-progress' | 'done'
-
-export type ProjectTask = {
-  title: string
-  description: string
-  status: ProjectTaskStatus
-}
-
-export type Project = {
-  title: string
-  description: string
-  icon: IconId
-  footerMeta: ProjectCardFooterMeta
-  tasks: ProjectTask[]
-}
+import { fetchProjects } from './redux/projectsSlice'
 
 type ModalAction = { type: 'SHOW' } | { type: 'HIDE' }
 
@@ -44,9 +28,9 @@ function modalReducer(_state: boolean, action: ModalAction): boolean {
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showModal, modalDispatch] = useReducer(modalReducer, false)
-  const projects = useAppSelector((s) => s.projects.projects)
   const setShowModal = (show: boolean) =>
     modalDispatch({ type: show ? 'SHOW' : 'HIDE' })
+  const dispatch = useAppDispatch()
 
   useEffect(() => {
     const closeIfDesktop = () => {
@@ -91,6 +75,17 @@ function App() {
       document.body.style.overflow = prev
     }
   }, [showModal])
+
+  useEffect(() => {
+    dispatch(fetchProjects())
+  }, [dispatch])
+
+ 
+  const slice = useAppSelector((state) => state.projects)
+  const { projects, loading, error } = slice
+
+  if (loading) return <div>Loading...</div>
+  if (error) return <div>Error: {error}</div>
 
   return (
     <>
