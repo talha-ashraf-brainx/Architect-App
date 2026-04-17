@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { z } from 'zod'
 
 export type ProjectTaskStatus = 'in-progress' | 'done'
 export type IconId = 'layers' | 'pencil' | 'building' | 'compass'
@@ -34,24 +35,29 @@ export type Project = {
     tasks: ProjectTask[]
 }
 
-type ApiProjectTask = {
-    id: number
-    projectId: number
-    name: string
-    description: string
-    markDone: boolean
-    createdAt: string
-    updatedAt: string
-}
+const apiProjectTaskSchema = z.object({
+    id: z.number(),
+    projectId: z.number(),
+    name: z.string(),
+    description: z.string(),
+    markDone: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+})
 
-type ApiProject = {
-    id: number
-    name: string
-    description: string
-    createdAt: string
-    updatedAt: string
-    tasks?: ApiProjectTask[]
-}
+const apiProjectSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    description: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    tasks: z.array(apiProjectTaskSchema).optional(),
+})
+
+const apiProjectsListSchema = z.array(apiProjectSchema)
+
+export type ApiProjectTask = z.infer<typeof apiProjectTaskSchema>
+export type ApiProject = z.infer<typeof apiProjectSchema>
 
 function normalizeProject(row: ApiProject): Project {
     const tasks = row.tasks ?? []
@@ -90,7 +96,8 @@ export const fetchProjects = createAsyncThunk<Project[]>(
         throw new Error('Failed to fetch projects')
       }
 
-      const data: ApiProject[] = await response.json()
+      const json: unknown = await response.json()
+      const data = apiProjectsListSchema.parse(json)
       return data.map(normalizeProject)
     }
   )
@@ -124,18 +131,13 @@ export const addProject = createAsyncThunk<Project, { name: string; description:
         if (!response.ok) {
             throw new Error('Failed to add project')
         }
-        const text = await response.text()
-        if (!text) {
-            throw new Error('Failed to add project')
-        }
-        let raw: ApiProject
+        let json: unknown
         try {
-            raw = JSON.parse(text) as ApiProject
-            console.log(raw)
+            json = await response.json()
         } catch {
             throw new Error('Failed to add project')
         }
-        return normalizeProject(raw)
+        return normalizeProject(apiProjectSchema.parse(json))
     },
 )
 
@@ -169,17 +171,13 @@ export const addTask = createAsyncThunk<ProjectTask, { projectId: number; name: 
         if (!response.ok) {
             throw new Error('Failed to add task')
         }
-        const text = await response.text()
-        if (!text) {
-            throw new Error('Failed to add task')
-        }
-        let raw: ApiProjectTask
+        let json: unknown
         try {
-            raw = JSON.parse(text) as ApiProjectTask
+            json = await response.json()
         } catch {
             throw new Error('Failed to add task')
         }
-        return normalizeTask(raw)
+        return normalizeTask(apiProjectTaskSchema.parse(json))
     },
 )
 
